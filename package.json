@@ -115,7 +115,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "@arco-design/transformable": "1.0.2",
+    "@arco-design/transformable": "^1.0.2",
     "axios": "^0.27.2",
     "es6-promise": "^4.2.8",
     "lodash.debounce": "^4.0.8",
