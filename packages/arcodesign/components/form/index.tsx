@@ -19,7 +19,10 @@ export interface FormProps {
 }
 
 export interface FormRef {
-    /** 最外层元素 DOM */
+    /**
+     * 最外层元素 DOM
+     * @en Outer Element DOM
+     */
     dom: HTMLFormElement | null;
 }
 
