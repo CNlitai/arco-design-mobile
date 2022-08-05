@@ -48,6 +48,7 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
     const domRef = useRef<HTMLFormElement | null>(null);
     const [form] = useForm(formInstance);
     const { setCallbacks, setInitialValues } = (form as InternalFormInstance).getInternalHooks();
+    // set functions
     setCallbacks({
         onValuesChange,
         onSubmit,
