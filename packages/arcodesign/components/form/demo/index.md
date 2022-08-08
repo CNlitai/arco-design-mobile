@@ -19,6 +19,7 @@ const rules = {
     name: [
         {
             validator: (val, callback) => {
+                console.log('validator')
                 if (!val) {
                     callback('请输入姓名');
                 } else if (val.length > 40) {
@@ -28,6 +29,17 @@ const rules = {
                 }
             },
         },
+        {
+            asyncValidator: (val, callback) => {
+                new Promise((_,reject)=>{
+                    setTimeout(() => {
+                        reject('asyncValidator error')
+                    }, 1000);
+                }).catch(err=>{
+                    callback(err);
+                })
+            },
+        }
     ],
     address: [
         {
@@ -132,6 +144,7 @@ const rules = {
         },
     ],
 };
+window.rules=rules
 export default function FormDemo() {
     const inputRef = React.useRef();
     const toastRef = React.useRef();
@@ -188,11 +201,15 @@ export default function FormDemo() {
 
     const [send, setSend] = React.useState('发送验证码');
     const [disable, setDisable] = React.useState(true);
-    const handleClick=(e)=>{
-        e.preventDefault()
-    }
+    const handleClick = e => {
+        e.preventDefault();
+    };
     const SendCode = () => (
-        <button style={{ position: 'absolute', right: 0, top: 0, fontSize: 16 }} disabled={disable} onClick={handleClick}>
+        <button
+            style={{ position: 'absolute', right: 0, top: 0, fontSize: 16 }}
+            disabled={disable}
+            onClick={handleClick}
+        >
             {send}
         </button>
     );
@@ -207,10 +224,10 @@ export default function FormDemo() {
                 onSubmitFailed={onSubmitFailed}
                 onValuesChange={onValuesChange}
             >
-                <Form.FormItem field="name" label="姓名" rules={rules.name}>
-                    <Input placeholder="请输入姓名" clearable border="none" />
+                <Form.FormItem field="name" label="姓名" rules={rules.name} trigger="onBlur">
+                    <Input placeholder="请输入姓名" clearable border="none" maxLength={3} />
                 </Form.FormItem>
-                <Form.FormItem field="address" label="家庭地址" rules={rules.address}>
+                <Form.FormItem field="address" label="家庭地址" rules={rules.address} trigger="onInput">
                     <Input placeholder="请输入家庭住址，详细到门牌号" clearable border="none" />
                 </Form.FormItem>
                 <Form.FormItem field="email" label="邮箱" rules={rules.email}>
@@ -232,7 +249,7 @@ export default function FormDemo() {
                 </Form.FormItem>
                 <Form.FormItem
                     style={{ width: 'auto' }}
-                    field="douyin_main_account"
+                    field="douyin_main_account[1]"
                     label="抖音发文账号"
                     rules={rules.douyin_main_account}
                 >

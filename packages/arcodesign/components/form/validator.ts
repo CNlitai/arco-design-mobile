@@ -21,31 +21,31 @@ export function schemaValidate(
                 return resolve({ errors, warnings });
             };
 
-            if (!rule || !rule?.validator) {
+            if (!rule || (!rule?.validator && !rule?.asyncValidator)) {
                 return next();
             }
-
-            rule.validator(value, (message?: ReactNode) => {
-                if (message) {
-                    // const error = {
-                    //     [field]: {
-                    //         message,
-                    //         field,
-                    //         value,
-                    //     },
-                    // };
-                    if (rule.level === 'warning') {
-                        warnings.push(message);
-                    } else {
+            if (rule.asyncValidator) {
+                return new Promise(_resolve => {
+                    rule.asyncValidator &&
+                        rule.asyncValidator(value, message => {
+                            if (message) {
+                                errors.push(message);
+                                return resolve({ errors, warnings });
+                            }
+                            _resolve(next());
+                        });
+                });
+            }
+            let hasNoError = true;
+            rule.validator &&
+                rule.validator(value, message => {
+                    if (message) {
+                        hasNoError = false;
                         errors.push(message);
-                        // return resolve({
-                        //     error,
-                        //     warning,
-                        // });
+                        return resolve({ errors, warnings });
                     }
-                }
-                return next();
-            });
+                });
+            return hasNoError && next();
         };
         validate(rules[current]);
     });

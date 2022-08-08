@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ReactNode, useRef } from 'react';
 import { Callbacks, FieldError, FieldItem, IFormInstance } from './type';
 
@@ -40,9 +41,13 @@ export const defaultFormDataMethods = {
 // 在field的静态的状态下设置
 class FormData {
     private _formData: FieldItem = {}; // 数据源
+
     private _fieldsList = {}; // 字段列表
+
     private _initialValues: Record<string, unknown> = {}; // 初始值
+
     private _callbacks: Callbacks = {};
+
     setFieldsValue = (values: FieldItem): boolean => {
         this._formData = { ...this._formData, ...values };
         this.notifyField(values);
@@ -67,6 +72,7 @@ class FormData {
         this.notifyField({ [name]: value });
         return true;
     };
+
     notifyField = (values: FieldItem): void => {
         Object.keys(values).map((fieldName: string) => {
             const fieldObj = this._fieldsList?.[fieldName] || null;
@@ -75,12 +81,14 @@ class FormData {
             }
         });
     };
+
     getFieldsValue = (names?: string[]) => {
         if (names) {
             return names.map(name => this.getFieldValue(name));
         }
         return this._formData;
     };
+
     getFieldValue = (name: string) => {
         return this._formData?.[name];
     };
@@ -89,23 +97,22 @@ class FormData {
         const field = this._fieldsList?.[name] || null;
         if (field) {
             return field.getFieldError();
-        } else {
-            return {
-                name,
-                errors: [],
-                warnings: [],
-            };
         }
+        return {
+            name,
+            errors: [],
+            warnings: [],
+        };
     };
 
     isFieldTouched = (name: string): boolean => {
         const field = this._fieldsList?.[name] || null;
         if (field) {
             return field.isFieldTouched();
-        } else {
-            return false;
         }
+        return false;
     };
+
     registerField = (name: string, self: ReactNode) => {
         this._fieldsList[name] = self;
         const { initialValue } = (self as any).props;
@@ -123,14 +130,17 @@ class FormData {
         return () => {
             if (name in this._fieldsList) {
                 delete this._fieldsList[name];
+                delete this._formData[name];
             }
         };
     };
+
     setInitialValues = (initVal: Record<string, unknown>, firstSet: boolean) => {
         if (firstSet) return;
         this._initialValues = { ...(initVal || {}) };
         this.setFieldsValue(initVal);
     };
+
     resetFields = () => {
         this.setFieldsValue(this._initialValues);
     };
@@ -209,6 +219,7 @@ class FormData {
     setCallbacks = (callbacks: Callbacks) => {
         this._callbacks = callbacks;
     };
+
     getMethods = () => {
         return {
             setFieldsValue: this.setFieldsValue,

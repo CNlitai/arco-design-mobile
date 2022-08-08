@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unused-class-component-methods */
+/* eslint-disable react/static-property-placement */
 import React, { PureComponent, ReactNode, useContext, useState } from 'react';
 import { cls } from '@arco-design/mobile-utils';
 import { schemaValidate } from './validator';
@@ -30,6 +32,7 @@ export interface IFormItemProps {
     shouldUpdate?: boolean | IShouldUpdateFunc;
     rules?: IRules[];
     extra: JSX.Element;
+    trigger?: string;
 }
 
 enum InternalComponentType {
@@ -49,6 +52,7 @@ export interface IFormItemInnerProps {
     children: JSX.Element;
     shouldUpdate?: boolean | IShouldUpdateFunc;
     rules?: IRules[];
+    trigger?: string;
     onValidateStatusChange: (data: { errors: any; warnings: any }) => void;
 }
 
@@ -60,13 +64,18 @@ interface IFromItemInnerState {
 
 class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerState> {
     static contextType = FormItemContextParams;
+
     destroyField: () => void;
+
     private _errors: ReactNode[] = [];
+
     private _touched = false;
+
     constructor(props) {
         super(props);
         this.destroyField = () => {};
     }
+
     componentDidMount() {
         const { getInternalHooks }: InternalFormInstance = this.context;
         const { registerField } = getInternalHooks();
@@ -79,7 +88,7 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
 
     onValueChange(preStore: Record<string, any>, curStore: Record<string, any>) {
         this._touched = true;
-        this.validateField();
+        // this.validateField();
         const { shouldUpdate } = this.props;
         if (true) {
             if (typeof shouldUpdate === 'function') {
@@ -93,6 +102,7 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
     getFieldError() {
         return this._errors;
     }
+
     isFieldTouched() {
         return this._touched;
     }
@@ -124,7 +134,7 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
     }
 
     renderChildren() {
-        const { children, field } = this.props;
+        const { children, field, trigger = 'onChange' } = this.props;
         const { getFieldValue, setFieldValue } = this.context as IFormDataMethods;
         let props: Record<string, any> = {
             value: getFieldValue(field),
@@ -138,6 +148,7 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
                 props = {
                     value: getFieldValue(field) || '',
                     onInput: (_, newValue) => setFieldValue(field, newValue),
+                    onClear: () => setFieldValue(field, ''),
                 };
                 break;
             case InternalComponentType.Checkbox:
@@ -169,6 +180,11 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
                 };
                 break;
         }
+        const originTrigger = props[trigger];
+        props[trigger] = (...args: any) => {
+            originTrigger && originTrigger(...args);
+            this.validateField();
+        };
         return React.cloneElement(children, props);
     }
 

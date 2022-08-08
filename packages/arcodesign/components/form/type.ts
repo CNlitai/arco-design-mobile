@@ -8,6 +8,7 @@ export interface IRules {
     length?: number;
     match?: RegExp;
     validator?: (value: any, callback: (err?: ReactNode) => void) => void;
+    asyncValidator?: (value: any, callback: (err?: ReactNode) => void) => void;
     message?: string;
     level?: 'warning' | 'error';
 }

@@ -19,10 +19,7 @@ export interface FormProps {
 }
 
 export interface FormRef {
-    /**
-     * 最外层元素 DOM
-     * @en Outer Element DOM
-     */
+    /** 最外层元素 DOM */
     dom: HTMLFormElement | null;
 }
 
@@ -48,7 +45,6 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
     const domRef = useRef<HTMLFormElement | null>(null);
     const [form] = useForm(formInstance);
     const { setCallbacks, setInitialValues } = (form as InternalFormInstance).getInternalHooks();
-    // set functions
     setCallbacks({
         onValuesChange,
         onSubmit,
