@@ -13,7 +13,6 @@ import {
     IRules,
     ValidateStatus,
 } from './type';
-import './style/index.less';
 
 export type TLayout = 'horizontal' | 'vertical' | 'inline';
 export type IShouldUpdateFunc = (data: {
