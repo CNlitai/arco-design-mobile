@@ -24,6 +24,18 @@ export function getStyleWithVendor(style: CSSProperties): CSSProperties {
     return newStyle;
 }
 
+export function setStyleWithVendor(dom: HTMLElement, cssKey: string, cssStyle: string) {
+    dom.style[cssKey] = cssStyle;
+    const allowReg = /(transform|transition|animation)/i;
+    if (allowReg.test(cssKey)) {
+        const webkitCssKey = `Webkit${cssKey.replace(
+            /(\w)(\w*)/g,
+            (_, $1, $2) => $1.toUpperCase() + $2,
+        )}`;
+        dom.style[webkitCssKey] = cssStyle;
+    }
+}
+
 /**
  * 计算默认值，仅未定义时使用默认值
  * @desc {en} Calculate the default value, use default value only if undefined
