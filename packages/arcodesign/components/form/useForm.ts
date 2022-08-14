@@ -147,49 +147,34 @@ class FormData {
 
     validateFields = () => {
         const promiseList: Promise<{
-            name: string;
-            errors: string[];
+            field: string;
+            value: any;
+            errors: ReactNode[];
         }>[] = [];
         Object.values(this._fieldsList).forEach((entity: any) => {
             const promise = entity.validateField();
-            const { field } = entity.props;
-            promiseList.push(
-                promise
-                    .then(() => ({ field, errors: [] }))
-                    .catch((errors: any) =>
-                        // eslint-disable-next-line prefer-promise-reject-errors
-                        Promise.reject({
-                            field,
-                            errors,
-                        }),
-                    ),
-            );
+            promiseList.push(promise.then(errors => errors));
         });
 
         let hasError = false;
         let count = promiseList.length;
         const results: FieldError[] = [];
-
         const summaryPromise = new Promise((resolve, reject) => {
-            promiseList.forEach((promise, index) => {
-                promise
-                    .catch(e => {
+            promiseList.forEach(promise => {
+                promise.then(result => {
+                    if (result?.errors?.length) {
+                        results.push(result);
                         hasError = true;
-                        return e;
-                    })
-                    .then(result => {
-                        count -= 1;
-                        results[index] = result;
-
-                        if (count > 0) {
-                            return;
-                        }
-
-                        if (hasError) {
-                            reject(results);
-                        }
-                        resolve(this._formData);
-                    });
+                    }
+                    count -= 1;
+                    if (count > 0) {
+                        return;
+                    }
+                    if (hasError) {
+                        reject(results);
+                    }
+                    resolve(results);
+                });
             });
         });
 

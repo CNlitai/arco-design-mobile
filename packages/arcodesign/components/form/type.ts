@@ -17,9 +17,9 @@ export type FieldItem = Record<string, any>;
 
 export type FieldError = {
     value?: FieldValue;
-    message?: ReactNode;
-    type?: string;
-    requiredError?: boolean;
+    errors?: ReactNode;
+    field?: string;
+    dom?: HTMLDivElement | null;
 };
 export interface IFormDataMethods {
     setFieldsValue: (values: FieldItem) => boolean;
@@ -54,11 +54,11 @@ export interface IFormInstance {
     getFieldsValue(name?: string[]): FieldItem;
     resetFields: () => void;
     setFieldsValue: (value: FieldItem) => void;
-    validateFields: any;
+    validateFields: () => Promise<Record<string, any>>;
     submit: () => void;
 }
 
 export type InternalFormInstance = Omit<IFormInstance, 'validateFields'> & {
-    validateFields: any;
+    validateFields: () => Promise<Record<string, any>>;
     getInternalHooks: () => InternalHooks;
 };

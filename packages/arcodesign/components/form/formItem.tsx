@@ -1,6 +1,5 @@
 /* eslint-disable react/no-unused-class-component-methods */
-/* eslint-disable react/static-property-placement */
-import React, { PureComponent, ReactNode, useContext, useState } from 'react';
+import React, { PureComponent, ReactNode, useContext, useRef, useState } from 'react';
 import { cls } from '@arco-design/mobile-utils';
 import { schemaValidate } from './validator';
 import { FormItemContextParams } from './formItemContext';
@@ -53,6 +52,7 @@ export interface IFormItemInnerProps {
     rules?: IRules[];
     trigger?: string;
     onValidateStatusChange: (data: { errors: any; warnings: any }) => void;
+    getFormItemRef: () => HTMLDivElement | null;
 }
 
 interface IFromItemInnerState {
@@ -62,6 +62,7 @@ interface IFromItemInnerState {
 }
 
 class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerState> {
+    // eslint-disable-next-line react/static-property-placement
     static contextType = FormItemContextParams;
 
     destroyField: () => void;
@@ -110,26 +111,23 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         errors: ReactNode[];
         value: FieldValue;
         field: string;
+        dom: HTMLDivElement | null;
     }> {
         const { getFieldValue } = this.context;
         const { field, rules, onValidateStatusChange } = this.props;
         const value = getFieldValue(field);
-        // let error = null;
-        // let warning = null;
         if (rules?.length && field) {
+            const fieldDom = this.props.getFormItemRef();
             return schemaValidate(value, rules).then(({ errors, warnings }) => {
                 this._errors = errors;
                 onValidateStatusChange({
                     errors,
                     warnings,
                 });
-                return Promise.resolve({ errors, value, field });
+                return Promise.resolve({ errors, value, field, dom: fieldDom });
             });
         }
-        // if(error) {
-        //     onValidateStatusChange({error: });
-        // }
-        return Promise.resolve({ errors: [], value, field });
+        return Promise.resolve({ errors: [], value, field, dom: null });
     }
 
     renderChildren() {
@@ -197,6 +195,7 @@ export default function FormItem(props: IFormItemProps) {
     const { prefixCls } = useContext(GlobalContext);
     const [errors, setErrors] = useState<ReactNode | null>(null);
     const [warnings, setWarnings] = useState<ReactNode[]>([]);
+    const formItemRef = useRef<HTMLDivElement | null>(null);
 
     const onValidateStatusChange = (validateResult: {
         errors: ReactNode[];
@@ -206,11 +205,16 @@ export default function FormItem(props: IFormItemProps) {
         setErrors(_errors.length ? _errors[0] : null);
         setWarnings(_warnings);
     };
+    const getFormItemRef = () => {
+        return formItemRef.current;
+    };
+
     return (
         <div
             className={cls(`${prefixCls}-form-item`, `${prefixCls}-form-item-${layout}`, {
                 disabled,
             })}
+            ref={formItemRef}
         >
             <div className={cls(`${prefixCls}-form-label-item`)}>{label}</div>
             <div className={cls(`${prefixCls}-form-item-control-wrapper`)}>
@@ -219,6 +223,7 @@ export default function FormItem(props: IFormItemProps) {
                         {...rest}
                         field={field}
                         onValidateStatusChange={onValidateStatusChange}
+                        getFormItemRef={getFormItemRef}
                     />
                 </div>
                 {errors && (

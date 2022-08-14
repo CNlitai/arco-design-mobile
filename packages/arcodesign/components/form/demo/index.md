@@ -171,8 +171,12 @@ export default function FormDemo() {
         }, 1000);
     };
 
-    const onSubmitFailed = fileds => {
-        const errorMessage = fileds.find(i => i.errors && i.errors.length).errors[0];
+    const onSubmitFailed = (fields = []) => {
+        const errorMessage = fields.find(i => i.errors && i.errors.length).errors[0];
+        const firstField = (fields || [])?.[0];
+        if(firstField) {
+            firstField?.dom?.scrollIntoView();
+        }
         Toast.toast(errorMessage);
     };
 
