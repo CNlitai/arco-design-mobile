@@ -135,7 +135,10 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         const { getFieldValue, setFieldValue } = this.context as IFormDataMethods;
         let props: Record<string, any> = {
             value: getFieldValue(field),
-            onChange: (_, newValue) => setFieldValue(field, newValue),
+            onChange: (_, newValue) => {
+                children.props?.onChange(_, newValue);
+                setFieldValue(field, newValue);
+            },
         };
 
         // eslint-disable-next-line default-case
