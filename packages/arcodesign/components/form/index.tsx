@@ -1,22 +1,10 @@
-import React, { useRef, forwardRef, Ref, useImperativeHandle, ReactNode } from 'react';
+import { componentWrapper } from '@arco-design/mobile-utils';
+import React, { useRef, forwardRef, Ref, useImperativeHandle } from 'react';
 import { ContextLayout } from '../context-provider';
-import FormItem from './formItem';
-import { FormItemContextParams } from './formItemContext';
-import { Callbacks, FieldItem, IFormInstance, InternalFormInstance } from './type';
+import FormItem from './form-item';
+import { FormItemContext } from './form-item-context';
+import { FormProps, InternalFormInstance } from './type';
 import useForm from './useForm';
-
-export interface FormProps {
-    /** 自定义类名 */
-    className?: string;
-    /** 自定义样式 */
-    style?: React.CSSProperties;
-    form?: IFormInstance;
-    initialValues?: FieldItem;
-    children: React.ReactNodeArray | ReactNode;
-    onValuesChange?: Callbacks['onValuesChange'];
-    onSubmit?: Callbacks['onSubmit'];
-    onSubmitFailed?: Callbacks['onSubmitFailed'];
-}
 
 export interface FormRef {
     /** 最外层元素 DOM */
@@ -35,6 +23,7 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
     const {
         className = '',
         style,
+        layout = 'horizontal',
         initialValues,
         form: formInstance,
         children,
@@ -60,6 +49,11 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
         dom: domRef.current,
     }));
 
+    const contextValue = {
+        form,
+        layout,
+    };
+
     return (
         <ContextLayout>
             {({ prefixCls }) => (
@@ -73,16 +67,17 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
                         form.submit();
                     }}
                 >
-                    <FormItemContextParams.Provider value={form}>
+                    <FormItemContext.Provider value={contextValue}>
                         {children}
-                    </FormItemContextParams.Provider>
+                    </FormItemContext.Provider>
                 </form>
             )}
         </ContextLayout>
     );
 });
 
-(Form as any).FormItem = FormItem;
-(Form as any).useForm = useForm;
 export { FormItem, useForm };
-export default Form;
+export default componentWrapper(Form, {
+    FormItem,
+    useForm,
+});

@@ -1,5 +1,6 @@
 import { ILocale } from './type';
 
+const defaultMessageTemplate = '%s 不是 %s 类型';
 const localeConfig: ILocale = {
     locale: 'zh-CN',
     LoadMore: {
@@ -48,6 +49,49 @@ const localeConfig: ILocale = {
     SearchBar: {
         placeholder: '请输入要查询的内容',
         cancelBtn: '取消',
+    },
+    Form: {
+        required: '%s is required',
+        type: {
+            email: defaultMessageTemplate,
+            url: defaultMessageTemplate,
+            string: defaultMessageTemplate,
+            number: defaultMessageTemplate,
+            array: defaultMessageTemplate,
+            object: defaultMessageTemplate,
+            boolean: defaultMessageTemplate,
+        },
+        number: {
+            min: '`%s` 不大于 `%s`',
+            max: '`%s` 不小于 `%s`',
+            equal: '`%s` 不等于 `%s`',
+            range: '`%s` 不在 `%s ~ %s` 范围中',
+            positive: '`%s` 不是正数',
+            negative: '`%s`不是负数',
+        },
+        string: {
+            max: '%s 不能多于 %s 个字符',
+            min: '%s 至少有 %s 个字符',
+            len: '%s 一定为 %s 个字符',
+            match: '`%s` 不匹配 %s 模式',
+            uppercase: '%s 需全为大写字符',
+            lowercase: '%s 需全为小写字符',
+            whitespace: '%s 不能为连续空格',
+        },
+        array: {
+            max: '%s 数组长度不大于 %s',
+            min: '%s 数组长度不少于 %s',
+            len: '%s 数组长度需为 %s',
+            includes: '%s 不包含 %s',
+            deepEqual: '%s 不完全等于 %s',
+        },
+        object: {
+            deepEqual: '%s 不完全等于 %s',
+            hasKeys: '%s 不包含必要字段 %s',
+        },
+        boolean: {
+            equal: '%s 不等于 `%s`',
+        },
     },
 };
 

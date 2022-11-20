@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 import { ReactNode, useRef } from 'react';
-import { Callbacks, FieldError, FieldItem, IFormInstance } from './type';
+import { Callbacks, FieldError, FieldItem, FieldValue, IFormInstance } from './type';
 
 const defaultFunc: any = () => {
     console.log('arco');
 };
+
 export const defaultFormDataMethods = {
     getFieldValue: name => name,
     getFieldsValue: names => {
@@ -148,52 +149,38 @@ class FormData {
     validateFields = () => {
         const promiseList: Promise<{
             field: string;
-            value: any;
+            value: FieldValue;
             errors: ReactNode[];
         }>[] = [];
         Object.values(this._fieldsList).forEach((entity: any) => {
             const promise = entity.validateField();
             promiseList.push(promise.then(errors => errors));
         });
+        let results: FieldError[] = [];
+        const summaryPromise: Promise<FieldItem> = new Promise((resolve, reject) => {
+            Promise.all(promiseList).then(res => {
+                results = res.filter(item => item?.errors?.length);
 
-        let hasError = false;
-        let count = promiseList.length;
-        const results: FieldError[] = [];
-        const summaryPromise = new Promise((resolve, reject) => {
-            promiseList.forEach(promise => {
-                promise.then(result => {
-                    if (result?.errors?.length) {
-                        results.push(result);
-                        hasError = true;
-                    }
-                    count -= 1;
-                    if (count > 0) {
-                        return;
-                    }
-                    if (hasError) {
-                        reject(results);
-                    }
+                if (results.length) {
+                    reject(results);
+                } else {
                     resolve(results);
-                });
+                }
             });
         });
-
-        return summaryPromise as Promise<Record<string, any>>;
+        return summaryPromise;
     };
 
     submit = async () => {
         this.validateFields()
             .then(values => {
+                console.log(values);
                 const { onSubmit } = this._callbacks;
-                if (onSubmit) {
-                    try {
-                        onSubmit(values);
-                    } catch (err) {
-                        console.error(err);
-                    }
-                }
+                // TODO: 试试 throw error 能否被catch捕捉到
+                onSubmit?.(values);
             })
             .catch(e => {
+                console.log(e);
                 const { onSubmitFailed } = this._callbacks;
                 if (onSubmitFailed) {
                     onSubmitFailed(e);

@@ -7,6 +7,7 @@ import { Radio } from '@arco-design/mobile-react';
 import IconCheck from '@arco-design/mobile-react/esm/icon/IconCheck';
 
 export default function RadioDemo() {
+    console.log(Radio.displayName, Radio.Group.displayName);
     return (
         <Radio
             value={1}

@@ -3539,6 +3539,14 @@ function getCompTokens() {
          * @en Border radius of the close button of ImagePicker
          */
         imagePickerCloseBorderRadius: `0 ${getRem(2)}`,
+
+        formItemLabelItemFontSize: getRem(16),
+        formItemLabelItemLineHeight: getRem(22),
+        formItemLabelItemColor: useGlobal('fontColor'),
+        formItemLabelItemGutter: getRem(16),
+        formItemLabelItemWidth: getRem(96),
+        formItemBorderDividerColor: 'rgba(0, 0, 0, 0.08)',
+        formItemLabelItemRequiredTipColor: '#F53F3F',
     };
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@arco-design/mobile-utils",
-  "version": "2.12.3",
+  "version": "2.10.2-alpha.1",
   "description": "",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -13,5 +13,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "12927a2cee1ac841f4e96754c72e6cd95633e68a"
+  "gitHead": "4b00eb90799a821d39f4b89ecc05adaa8c907f94"
 }

@@ -17,21 +17,11 @@ import {
 } from '@arco-design/mobile-react';
 const rules = {
     name: [
+        { required: true },
+        { type: "string", max: 10, min: 2,  uppercase: true },
         {
             validator: (val, callback) => {
-                console.log('validator')
-                if (!val) {
-                    callback('请输入姓名');
-                } else if (val.length > 40) {
-                    callback('最多输入40个字');
-                } else {
-                    callback();
-                }
-            },
-        },
-        {
-            asyncValidator: (val, callback) => {
-                new Promise((_,reject)=>{
+                return new Promise((_,reject)=>{
                     setTimeout(() => {
                         reject('asyncValidator error')
                     }, 1000);
@@ -39,7 +29,8 @@ const rules = {
                     callback(err);
                 })
             },
-        }
+
+        },
     ],
     address: [
         {
@@ -144,12 +135,10 @@ const rules = {
         },
     ],
 };
-window.rules=rules
 export default function FormDemo() {
     const inputRef = React.useRef();
     const toastRef = React.useRef();
     const [form] = Form.useForm();
-    window.form = form;
     const toSubmit = val => {
         form.submit();
     };
@@ -227,9 +216,10 @@ export default function FormDemo() {
                 onSubmit={onSubmit}
                 onSubmitFailed={onSubmitFailed}
                 onValuesChange={onValuesChange}
+                layout="vertical"
             >
-                <Form.FormItem field="name" label="姓名" rules={rules.name} trigger="onBlur">
-                    <Input placeholder="请输入姓名" clearable border="none" maxLength={3} />
+                <Form.FormItem field="name" label="姓名" rules={rules.name} trigger="onBlur" required>
+                    <Input placeholder="请输入姓名" clearable border="none" />
                 </Form.FormItem>
                 <Form.FormItem field="address" label="家庭地址" rules={rules.address} trigger="onInput">
                     <Input placeholder="请输入家庭住址，详细到门牌号" clearable border="none" />

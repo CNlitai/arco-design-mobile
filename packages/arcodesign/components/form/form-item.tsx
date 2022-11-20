@@ -1,37 +1,19 @@
 /* eslint-disable react/no-unused-class-component-methods */
 import React, { PureComponent, ReactNode, useContext, useRef, useState } from 'react';
 import { cls } from '@arco-design/mobile-utils';
-import { schemaValidate } from './validator';
-import { FormItemContextParams } from './formItemContext';
+import { Validator } from '@arco-design/mobile-utils/utils/validator/validator';
+import { ValidatorError } from '@arco-design/mobile-utils/utils/validator/type';
+import { FormItemContext } from './form-item-context';
 import { GlobalContext } from '../context-provider';
 import {
     FieldError,
+    FieldItem,
     FieldValue,
     IFormDataMethods,
-    InternalFormInstance,
-    IRules,
+    IFormItemInnerProps,
+    IFormItemProps,
     ValidateStatus,
 } from './type';
-
-export type TLayout = 'horizontal' | 'vertical' | 'inline';
-export type IShouldUpdateFunc = (data: {
-    preStore: Record<string, any>;
-    curStore: Record<string, any>;
-}) => boolean;
-export interface IFormItemProps {
-    label: ReactNode;
-    style?: React.CSSProperties;
-    field: string;
-    required: boolean;
-    defaultValue: any;
-    disabled?: boolean;
-    layout?: TLayout;
-    children: JSX.Element;
-    shouldUpdate?: boolean | IShouldUpdateFunc;
-    rules?: IRules[];
-    extra: JSX.Element;
-    trigger?: string;
-}
 
 enum InternalComponentType {
     Input = 'ADMInput',
@@ -45,15 +27,6 @@ enum InternalComponentType {
     Slider = 'ADMSlider',
     Switch = 'ADMSwitch',
 }
-export interface IFormItemInnerProps {
-    field: string;
-    children: JSX.Element;
-    shouldUpdate?: boolean | IShouldUpdateFunc;
-    rules?: IRules[];
-    trigger?: string;
-    onValidateStatusChange: (data: { errors: any; warnings: any }) => void;
-    getFormItemRef: () => HTMLDivElement | null;
-}
 
 interface IFromItemInnerState {
     validateStatus: ValidateStatus;
@@ -62,9 +35,6 @@ interface IFromItemInnerState {
 }
 
 class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerState> {
-    // eslint-disable-next-line react/static-property-placement
-    static contextType = FormItemContextParams;
-
     destroyField: () => void;
 
     private _errors: ReactNode[] = [];
@@ -77,8 +47,7 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
     }
 
     componentDidMount() {
-        const { getInternalHooks }: InternalFormInstance = this.context;
-        const { registerField } = getInternalHooks();
+        const { registerField } = this.context.form.getInternalHooks();
         this.destroyField = registerField(this.props.field, this);
     }
 
@@ -86,17 +55,14 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         this.destroyField();
     }
 
-    onValueChange(preStore: Record<string, any>, curStore: Record<string, any>) {
+    onValueChange(preStore: FieldItem, curStore: FieldItem) {
         this._touched = true;
-        // this.validateField();
         const { shouldUpdate } = this.props;
-        if (true) {
-            if (typeof shouldUpdate === 'function') {
-                shouldUpdate({ preStore, curStore }) && this.forceUpdate();
-                return;
-            }
-            this.forceUpdate();
+        if (typeof shouldUpdate === 'function') {
+            shouldUpdate({ preStore, curStore }) && this.forceUpdate();
+            return;
         }
+        this.forceUpdate();
     }
 
     getFieldError() {
@@ -113,42 +79,46 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         field: string;
         dom: HTMLDivElement | null;
     }> {
-        const { getFieldValue } = this.context;
+        const { getFieldValue } = this.context.form;
         const { field, rules, onValidateStatusChange } = this.props;
         const value = getFieldValue(field);
         if (rules?.length && field) {
             const fieldDom = this.props.getFormItemRef();
-            return schemaValidate(value, rules).then(({ errors, warnings }) => {
-                this._errors = errors;
-                onValidateStatusChange({
-                    errors,
-                    warnings,
+            const fieldValidator = new Validator({ [field]: rules });
+            return new Promise(resolve => {
+                fieldValidator.validate({ [field]: value }, (errors: ValidatorError) => {
+                    this._errors = errors.message || [];
+                    onValidateStatusChange({
+                        errors,
+                        warnings: [],
+                    });
+                    return resolve({ errors: errors.message || [], value, field, dom: fieldDom });
                 });
-                return Promise.resolve({ errors, value, field, dom: fieldDom });
             });
         }
         return Promise.resolve({ errors: [], value, field, dom: null });
     }
 
-    renderChildren() {
-        const { children, field, trigger = 'onChange' } = this.props;
-        const { getFieldValue, setFieldValue } = this.context as IFormDataMethods;
-        let props: Record<string, any> = {
-            value: getFieldValue(field),
-            onChange: (_, newValue) => {
-                children.props?.onChange(_, newValue);
-                setFieldValue(field, newValue);
-            },
-        };
+    setFieldData(value: FieldValue) {
+        const { field } = this.props;
+        const { setFieldValue } = this.context.form as IFormDataMethods;
+        setFieldValue(field, value);
+        this.validateField();
+    }
 
-        // eslint-disable-next-line default-case
+    renderChildren() {
+        const { children, field, trigger = 'onChange', triggerPropsField = 'value' } = this.props;
+        const { getFieldValue } = this.context.form as IFormDataMethods;
+        let props = {
+            [triggerPropsField]: getFieldValue(field),
+        };
         switch (children.type.displayName) {
             case InternalComponentType.Input:
             case InternalComponentType.Textarea:
                 props = {
                     value: getFieldValue(field) || '',
-                    onInput: (_, newValue) => setFieldValue(field, newValue),
-                    onClear: () => setFieldValue(field, ''),
+                    onInput: (_, newValue) => this.setFieldData(newValue),
+                    onClear: () => this.setFieldData(''),
                 };
                 break;
             case InternalComponentType.Checkbox:
@@ -157,34 +127,37 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
             case InternalComponentType.RadioGroup:
                 props = {
                     value: getFieldValue(field),
-                    onChange: newValue => setFieldValue(field, newValue),
+                    onChange: newValue => this.setFieldData(newValue),
                 };
                 break;
             case InternalComponentType.DatePicker:
                 props = {
                     currentTs: getFieldValue(field),
-                    onChange: (_, newValue) => setFieldValue(field, newValue),
+                    onChange: (_, newValue) => this.setFieldData(newValue),
                 };
                 break;
             case InternalComponentType.Picker:
                 props = {
                     data: getFieldValue(field),
-                    onPickerChange: (_, newValue) => setFieldValue(field, newValue),
+                    onPickerChange: (_, newValue) => this.setFieldData(newValue),
                 };
                 break;
 
             case InternalComponentType.Switch:
                 props = {
                     checked: Boolean(getFieldValue(field)),
-                    onChange: checked => setFieldValue(field, checked),
+                    onChange: checked => this.setFieldData(checked),
                 };
                 break;
+            default:
+                const originTrigger = props[trigger];
+                props[trigger] = (_, newValue, ...args: any) => {
+                    this.setFieldData(newValue);
+
+                    originTrigger && originTrigger(newValue, ...args);
+                };
         }
-        const originTrigger = props[trigger];
-        props[trigger] = (...args: any) => {
-            originTrigger && originTrigger(...args);
-            this.validateField();
-        };
+
         return React.cloneElement(children, props);
     }
 
@@ -192,10 +165,21 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         return this.renderChildren();
     }
 }
+FormItemInner.contextType = FormItemContext;
 
 export default function FormItem(props: IFormItemProps) {
-    const { label, field, disabled = false, layout = 'horizontal', style, extra, ...rest } = props;
+    const {
+        label,
+        field,
+        disabled = false,
+        layout: itemLayout,
+        style,
+        extra,
+        requiredIcon,
+        ...rest
+    } = props;
     const { prefixCls } = useContext(GlobalContext);
+    const { layout } = useContext(FormItemContext);
     const [errors, setErrors] = useState<ReactNode | null>(null);
     const [warnings, setWarnings] = useState<ReactNode[]>([]);
     const formItemRef = useRef<HTMLDivElement | null>(null);
@@ -214,12 +198,26 @@ export default function FormItem(props: IFormItemProps) {
 
     return (
         <div
-            className={cls(`${prefixCls}-form-item`, `${prefixCls}-form-item-${layout}`, {
-                disabled,
-            })}
+            className={cls(
+                `${prefixCls}-form-item`,
+                `${prefixCls}-form-item-${itemLayout || layout}`,
+                {
+                    disabled,
+                },
+            )}
+            style={style}
             ref={formItemRef}
         >
-            <div className={cls(`${prefixCls}-form-label-item`)}>{label}</div>
+            <div className={cls(`${prefixCls}-form-label-item`)}>
+                {rest.required
+                    ? requiredIcon || (
+                          <span className={cls(`${prefixCls}-form-label-item-required-tip`)}>
+                              *
+                          </span>
+                      )
+                    : null}
+                {label}
+            </div>
             <div className={cls(`${prefixCls}-form-item-control-wrapper`)}>
                 <div className={cls(`${prefixCls}-form-item-control`)}>
                     <FormItemInner

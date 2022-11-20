@@ -696,6 +696,13 @@ export interface ArcodesignToken extends Record<string, string> {
     'image-picker-close-height': string;
     'image-picker-close-background': string;
     'image-picker-close-border-radius': string;
+    'form-item-label-item-font-size': string;
+    'form-item-label-item-line-height': string;
+    'form-item-label-item-color': string;
+    'form-item-label-item-gutter': string;
+    'form-item-label-item-width': string;
+    'form-item-border-divider-color': string;
+    'form-item-label-item-required-tip-color': string;
 }
 declare const tokens: ArcodesignToken;
 export default tokens;

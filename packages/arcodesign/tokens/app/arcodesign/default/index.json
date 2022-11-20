@@ -3179,6 +3179,62 @@
             "en": "Base font color"
         }
     },
+    "formItemBorderDividerColor": {
+        "cssKey": "form-item-border-divider-color",
+        "desc": "",
+        "override": "",
+        "value": "rgba(0, 0, 0, 0.08)",
+        "jsValue": "rgba(0, 0, 0, 0.08)",
+        "staticValue": "rgba(0, 0, 0, 0.08)"
+    },
+    "formItemLabelItemColor": {
+        "cssKey": "form-item-label-item-color",
+        "desc": "",
+        "override": "",
+        "value": "@font-color",
+        "jsValue": "@global@fontColor",
+        "staticValue": "#1d2129"
+    },
+    "formItemLabelItemFontSize": {
+        "cssKey": "form-item-label-item-font-size",
+        "desc": "",
+        "override": "",
+        "value": "~`pxtorem(16)`",
+        "jsValue": "@getRem@16",
+        "staticValue": "0.32rem"
+    },
+    "formItemLabelItemGutter": {
+        "cssKey": "form-item-label-item-gutter",
+        "desc": "",
+        "override": "",
+        "value": "~`pxtorem(16)`",
+        "jsValue": "@getRem@16",
+        "staticValue": "0.32rem"
+    },
+    "formItemLabelItemLineHeight": {
+        "cssKey": "form-item-label-item-line-height",
+        "desc": "",
+        "override": "",
+        "value": "~`pxtorem(22)`",
+        "jsValue": "@getRem@22",
+        "staticValue": "0.44rem"
+    },
+    "formItemLabelItemRequiredTipColor": {
+        "cssKey": "form-item-label-item-required-tip-color",
+        "desc": "",
+        "override": "",
+        "value": "#F53F3F",
+        "jsValue": "#F53F3F",
+        "staticValue": "#F53F3F"
+    },
+    "formItemLabelItemWidth": {
+        "cssKey": "form-item-label-item-width",
+        "desc": "",
+        "override": "",
+        "value": "~`pxtorem(96)`",
+        "jsValue": "@getRem@96",
+        "staticValue": "1.92rem"
+    },
     "fullScreenZIndex": {
         "cssKey": "full-screen-z-index",
         "desc": "全屏组件zIndex基础值",
