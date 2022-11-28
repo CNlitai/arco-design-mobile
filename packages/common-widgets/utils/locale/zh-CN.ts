@@ -65,7 +65,7 @@ const localeConfig: ILocale = {
             min: '`%s` 小于 `%s`',
             max: '`%s` 大于 `%s`',
             equal: '`%s` 不等于 `%s`',
-            range: '`%s` 不在 `%s ~ %s` 范围中',
+            range: '`%s` 不在 `%s ~ %s` 范围中 ',
             positive: '`%s` 不是正数',
             negative: '`%s`不是负数',
         },
