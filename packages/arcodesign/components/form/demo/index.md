@@ -14,7 +14,9 @@ import {
     Button,
     Checkbox,
     Toast,
-    ImagePicker
+    ImagePicker,
+    Rate,
+    Slider
 } from '@arco-design/mobile-react';
 
 const options = [
@@ -40,11 +42,10 @@ export default function FormDemo() {
     };
 
     const onSubmitFailed = (values, errors = [], definedError = {}) => {
-        const errorMessage = errors.find(i => i.errors && i.errors.length).errors[0];
-        // const firstField = (errors || [])?.[0];
-        // if(firstField) {
-        //     firstField?.dom?.scrollIntoView();
-        // }
+        const firstField = (errors || [])?.[0];
+        if(firstField) {
+            firstField?.dom?.scrollIntoView();
+        }
         console.log('----submit failed value:', values);
         console.log('----submit error', errors);
     };
@@ -95,10 +96,16 @@ export default function FormDemo() {
                         <Checkbox value={3} style={{height: 42}}>Option content 3</Checkbox>
                     </Checkbox.Group>
                 </Form.FormItem>
+                 <Form.FormItem field="score" label="Score">
+                    <Rate />
+                </Form.FormItem>
                 <Form.FormItem field="pictures" label="Pictures" initialValue={[
                     { url: 'http://sf1-cdn-tos.toutiaostatic.com/obj/arco-mobile/_static_/large_image_1.jpg' }
                 ]}>
                     <ImagePicker />
+                </Form.FormItem>
+                <Form.FormItem field="progress" label="Progress">
+                    <Slider />
                 </Form.FormItem>
                 <Button needActive onClick={toSubmit}>
                     Submit
