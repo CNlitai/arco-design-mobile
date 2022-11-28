@@ -1,6 +1,6 @@
 export declare function getRem(px: number, baseFontSize: number): string;
 export interface ArcodesignToken extends Record<string, string> {
-    'prefix': string;
+    prefix: string;
     'base-font-size': string;
     'background-color': string;
     'font-color': string;
@@ -516,8 +516,12 @@ export interface ArcodesignToken extends Record<string, string> {
     'notify-font-size': string;
     'notify-min-height': string;
     'steps-padding': string;
+    'steps-tail-border-radius': string;
+    'steps-tail-horizontal-gutter': string;
+    'steps-tail-vertical-gutter': string;
     'steps-tail-horizontal-padding': string;
     'steps-tail-vertical-padding': string;
+    'steps-tail-horizontal-left': string;
     'steps-tail-vertical-top': string;
     'steps-tail-standard-size': string;
     'steps-tail-standard-background': string;
@@ -705,6 +709,20 @@ export interface ArcodesignToken extends Record<string, string> {
     'form-item-label-item-required-asterisk-color': string;
     'form-item-error-message-color': string;
     'form-item-warning-message-color': string;
+    'stepper-font-size': string;
+    'stepper-square-border': string;
+    'stepper-square-border-radius': string;
+    'stepper-square-background-color': string;
+    'stepper-round-button-border-radius': string;
+    'stepper-round-input-background-color': string;
+    'stepper-button-size': string;
+    'stepper-button-icon-size': string;
+    'stepper-default-background-color': string;
+    'stepper-content-color': string;
+    'stepper-disable-color': string;
+    'stepper-input-width': string;
+    'stepper-input-height': string;
+    'stepper-input-margin': string;
 }
 declare const tokens: ArcodesignToken;
 export default tokens;

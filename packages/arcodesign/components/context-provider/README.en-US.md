@@ -1,6 +1,6 @@
 ### Others
 
-# ContextProvider 
+# ContextProvider
 
 Global data control component, used to replace global data.
 

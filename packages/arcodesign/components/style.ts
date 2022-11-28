@@ -45,6 +45,7 @@ import './pull-refresh/style';
 import './rate/style';
 import './slider/style';
 import './search-bar/style';
+import './stepper/style';
 import './steps/style';
 import './sticky/style';
 import './swipe-action/style';

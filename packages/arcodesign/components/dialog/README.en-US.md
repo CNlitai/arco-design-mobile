@@ -1,6 +1,6 @@
 ### FeedBack
 
-# Dialog 
+# Dialog
 
 A modal dialog, displayed in a floating layer, guides the user to perform related operations. By default, anti-scroll penetration processing is performed. If scrolling is required in the content of the bullet layer, you need to pass the scroll container to `getScrollContainer` to release scrolling when it is not scrolled to the top or bottom.
 
