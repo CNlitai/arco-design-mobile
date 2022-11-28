@@ -10,7 +10,7 @@ export const defaultFormDataMethods = {
     getFieldValue: name => name,
     getFieldsValue: names => {
         console.log(names);
-        return { arco: 'arco' };
+        return { arco: 'arco ' };
     },
     setFieldValue: (name, value) => {
         console.log(name, value);
