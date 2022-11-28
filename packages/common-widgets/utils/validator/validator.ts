@@ -9,7 +9,7 @@ import {
     StringValidator,
 } from './rules';
 import {
-    FieldValue,
+    IFieldValue,
     IRules,
     ITypeRules,
     IValidateMsgTemplate,
@@ -20,7 +20,7 @@ import {
 export class Validator {
     rules: Record<string, IRules[]>;
 
-    option: { first: boolean; validateMessage?: Partial<IValidateMsgTemplate> };
+    options: { first: boolean; validateMessages?: Partial<IValidateMsgTemplate> };
 
     validatorGroup: {
         number: NumberValidator;
@@ -30,23 +30,30 @@ export class Validator {
         custom: CustomValidator;
     } | null;
 
-    constructor(rules: Record<string, IRules[]>) {
+    constructor(
+        rules: Record<string, IRules[]>,
+        options: { first?: boolean; validateMessages?: Partial<IValidateMsgTemplate> },
+    ) {
         this.rules = rules;
-        this.option = { first: true };
+        this.options = { first: true, ...(options || {}) };
     }
 
     createValidatorGroup(value: any, rule: IRules, field: string) {
+        const curOption = {
+            field,
+            validateMessage: this.options?.validateMessages,
+        };
         return {
-            number: new NumberValidator(value, rule, field),
-            array: new ArrayValidator(value, rule, field),
-            string: new StringValidator(value, rule, field),
-            object: new ObjectValidator(value, rule, field),
-            custom: new CustomValidator(value, rule, field),
+            number: new NumberValidator(value, rule, curOption),
+            array: new ArrayValidator(value, rule, curOption),
+            string: new StringValidator(value, rule, curOption),
+            object: new ObjectValidator(value, rule, curOption),
+            custom: new CustomValidator(value, rule, curOption),
         };
     }
 
     // 一条rule执行
-    getSingleValidateGroup(value: FieldValue, rule: IRules, field: string) {
+    getSingleValidateGroup(value: IFieldValue, rule: IRules, field: string) {
         const vType = rule?.type || 'string';
         const validPromises: Promise<any>[] = [];
         const validatorGroup = this.createValidatorGroup(value, rule, field);
@@ -55,8 +62,12 @@ export class Validator {
         if (rule.required) {
             validPromises.push(
                 new Promise(resolve => {
-                    validatorGroup.number.isRequired();
-                    resolve(validatorGroup.number.getErrors());
+                    validatorGroup.string.isRequired();
+                    const curError = validatorGroup.string.getErrors();
+                    resolve({
+                        ...curError,
+                        validateLevel: rule?.validateLevel || 'error',
+                    });
                 }),
             );
         }
@@ -71,12 +82,19 @@ export class Validator {
                     resPromise && validPromises.push(resPromise);
                     return;
                 }
-                validPromises.push(
-                    new Promise(resolve => {
-                        typeValidator.validateRules.includes(key) && typeValidator[key](rule[key]);
-                        resolve(typeValidator.getErrors());
-                    }),
-                );
+                if (typeValidator.validateRules.includes(key)) {
+                    validPromises.push(
+                        new Promise(resolve => {
+                            typeValidator.validateRules.includes(key) &&
+                                typeValidator[key](rule[key]);
+                            const curError = typeValidator.getErrors();
+                            resolve({
+                                ...curError,
+                                validateLevel: rule?.validateLevel || 'error',
+                            });
+                        }),
+                    );
+                }
             });
         }
         return validPromises;
@@ -94,7 +112,7 @@ export class Validator {
                     return resolve({});
                 };
                 promise.then((errors: ValidatorError) => {
-                    if (this.option.first && (errors.message || [])?.length > 0) {
+                    if (this.options.first && (errors.message || [])?.length > 0) {
                         return resolve(errors);
                     }
                     next();
@@ -126,7 +144,11 @@ export class Validator {
         if (promiseGroup.length > 0) {
             Promise.all(promiseGroup).then(data => {
                 const lastErrors = data.reduce((pre, cur, index) => {
-                    pre[keys[index]] = cur;
+                    if (!(keys[index] in pre)) {
+                        pre[keys[index]] = [];
+                    }
+
+                    pre[keys[index]].push(cur);
                     return pre;
                 }, {});
                 callback && callback(lastErrors);

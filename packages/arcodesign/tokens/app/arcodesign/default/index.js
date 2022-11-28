@@ -709,12 +709,14 @@ var tokens = {
   "image-picker-close-background": "rgba(0, 0, 0, 0.3)",
   "image-picker-close-border-radius": "0 0.04rem",
   "form-item-label-item-font-size": "0.32rem",
-  "form-item-label-item-line-height": "0.44rem",
+  "form-item-label-item-line-height": "1.08rem",
   "form-item-label-item-color": "#1d2129",
   "form-item-label-item-gutter": "0.32rem",
   "form-item-label-item-width": "1.92rem",
   "form-item-border-divider-color": "rgba(0, 0, 0, 0.08)",
-  "form-item-label-item-required-tip-color": "#F53F3F"
+  "form-item-label-item-required-asterisk-color": "#F53F3F",
+  "form-item-error-message-color": "#F53F3F",
+  "form-item-warning-message-color": "#FF7D00"
 };
 var _default = tokens;
 exports["default"] = _default;

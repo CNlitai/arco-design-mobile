@@ -702,7 +702,9 @@ export interface ArcodesignToken extends Record<string, string> {
     'form-item-label-item-gutter': string;
     'form-item-label-item-width': string;
     'form-item-border-divider-color': string;
-    'form-item-label-item-required-tip-color': string;
+    'form-item-label-item-required-asterisk-color': string;
+    'form-item-error-message-color': string;
+    'form-item-warning-message-color': string;
 }
 declare const tokens: ArcodesignToken;
 export default tokens;

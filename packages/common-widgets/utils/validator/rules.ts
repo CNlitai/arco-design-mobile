@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { isDeepEqual, isEmptyArray, isEmptyValue } from '../is';
 import { getMsgTemplate, mergeMsgTemplate, messageTemplate } from './message';
@@ -31,11 +30,11 @@ export class BaseValidator {
 
     constructor(value: any, rule: InnerRules, options: IValidateOption) {
         this.value = value;
-        const { message = '', field, ...rest } = rule;
+        const { message = '', ...rest } = rule;
         this.message = message || '';
         this.type = rule.type || ValidatorType.String;
         this.error = { value, message: [], errorTypes: [] };
-        this.field = field || '';
+        this.field = options.field || '';
         this.rule = rest;
         this.validateRules = [];
         this.curValidMsgTemplate = mergeMsgTemplate(messageTemplate, options.validateMessage);
@@ -44,7 +43,9 @@ export class BaseValidator {
     isRequired() {
         // 优先级最高
         if (isEmptyValue(this.value) || isEmptyArray(this.value)) {
-            this.error.message = [this.message || getMsgTemplate('required', [this.field])];
+            this.error.message = [
+                this.message || getMsgTemplate(this.curValidMsgTemplate, 'required', [this.field]),
+            ];
             this.error.errorTypes = ['required'];
             return false;
         }
@@ -63,7 +64,8 @@ export class BaseValidator {
         { errTemplate, values }: { errTemplate: string; values: string[] },
     ) {
         if (isError) {
-            const theMessage = this.message || getMsgTemplate(errTemplate, values);
+            const theMessage =
+                this.message || getMsgTemplate(this.curValidMsgTemplate, errTemplate, values);
             this.error.errorTypes.push(errTemplate);
             this.error.message?.push(theMessage);
             return theMessage;

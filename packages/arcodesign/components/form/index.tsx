@@ -1,9 +1,9 @@
-import { componentWrapper } from '@arco-design/mobile-utils';
-import React, { useRef, forwardRef, Ref, useImperativeHandle } from 'react';
+import { componentWrapper, defaultLocale } from '@arco-design/mobile-utils';
+import React, { useRef, forwardRef, Ref, useImperativeHandle, useEffect } from 'react';
 import { ContextLayout } from '../context-provider';
 import FormItem from './form-item';
 import { FormItemContext } from './form-item-context';
-import { FormProps, InternalFormInstance } from './type';
+import { IFormProps, InternalFormInstance } from './type';
 import useForm from './useForm';
 
 export interface FormRef {
@@ -19,7 +19,7 @@ export interface FormRef {
  * @name 表单
  * @name_en Form
  */
-const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
+const Form = forwardRef((props: IFormProps, ref: Ref<FormRef>) => {
     const {
         className = '',
         style,
@@ -30,6 +30,7 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
         onValuesChange,
         onSubmit,
         onSubmitFailed,
+        disabled,
     } = props;
     const domRef = useRef<HTMLFormElement | null>(null);
     const [form] = useForm(formInstance);
@@ -41,22 +42,27 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
     });
 
     const mountRef = React.useRef<boolean>(true);
-    setInitialValues(initialValues || {}, !mountRef.current);
-    if (!mountRef.current) {
-        mountRef.current = false;
-    }
+    useEffect(() => {
+        // just initialize once
+        mountRef.current && setInitialValues(initialValues || {});
+        if (!mountRef.current) {
+            mountRef.current = false;
+        }
+    }, [initialValues]);
+
     useImperativeHandle(ref, () => ({
         dom: domRef.current,
     }));
 
     const contextValue = {
-        form,
+        form: form as InternalFormInstance,
         layout,
+        disabled,
     };
 
     return (
         <ContextLayout>
-            {({ prefixCls }) => (
+            {({ prefixCls, locale = defaultLocale }) => (
                 <form
                     className={`${prefixCls}-form ${className}`}
                     style={style}
@@ -67,7 +73,9 @@ const Form = forwardRef((props: FormProps, ref: Ref<FormRef>) => {
                         form.submit();
                     }}
                 >
-                    <FormItemContext.Provider value={contextValue}>
+                    <FormItemContext.Provider
+                        value={{ ...contextValue, validateMessages: locale?.Form || {} }}
+                    >
                         {children}
                     </FormItemContext.Provider>
                 </form>

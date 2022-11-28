@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 export type FieldValue = any;
 export type FieldItem = Record<string, any>;
 export type ILayout = 'horizontal' | 'vertical' | 'inline';
-export interface FormProps {
+export interface IFormProps {
     /** 自定义类名 */
     className?: string;
     /** 自定义样式 */
@@ -16,14 +16,16 @@ export interface FormProps {
     onValuesChange?: Callbacks['onValuesChange'];
     onSubmit?: Callbacks['onSubmit'];
     onSubmitFailed?: Callbacks['onSubmitFailed'];
+    disabled?: boolean;
 }
 
-export type FieldError = {
+export interface IFieldError {
     value?: FieldValue;
     errors?: ReactNode[];
+    warnings?: ReactNode[];
     field?: string;
     dom?: HTMLDivElement | null;
-};
+}
 export interface IFormDataMethods {
     setFieldsValue: (values: FieldItem) => boolean;
     setFieldValue: (name: string, value: FieldValue) => boolean;
@@ -42,13 +44,13 @@ export enum ValidateStatus {
 
 export interface Callbacks {
     onValuesChange?: (changedValues: FieldValue, values: FieldValue) => void;
-    onSubmit?: (values: FieldValue) => void;
-    onSubmitFailed?: (errorInfo: FieldError) => void;
+    onSubmit?: (values: FieldValue, otherInfo?: IFieldError[]) => void;
+    onSubmitFailed?: (values: FieldValue, errorInfo: IFieldError[] | Error) => void;
 }
 
 export interface InternalHooks {
     registerField: (name: string, self: ReactNode) => () => void;
-    setInitialValues: (values: FieldItem, init: boolean) => void;
+    setInitialValues: (values: FieldItem) => void;
     setCallbacks: (callbacks: Callbacks) => void;
 }
 
@@ -69,6 +71,8 @@ export type InternalFormInstance = Omit<IFormInstance, 'validateFields'> & {
 export interface IFormItemContext {
     form: InternalFormInstance;
     layout: ILayout;
+    disabled?: boolean;
+    validateMessages?: any;
 }
 
 export type IShouldUpdateFunc = (data: { preStore: FieldItem; curStore: FieldItem }) => boolean;
@@ -76,8 +80,7 @@ export interface IFormItemProps {
     label: ReactNode;
     style?: React.CSSProperties;
     field: string;
-    required: boolean;
-    defaultValue: FieldValue;
+    required?: boolean;
     disabled?: boolean;
     layout?: ILayout;
     children: JSX.Element;
@@ -86,6 +89,7 @@ export interface IFormItemProps {
     extra: JSX.Element;
     trigger?: string;
     requiredIcon: ReactNode;
+    initialValue?: FieldValue;
 }
 export interface IFormItemInnerProps {
     field: string;
@@ -96,4 +100,6 @@ export interface IFormItemInnerProps {
     onValidateStatusChange: (data: { errors: any; warnings: any }) => void;
     getFormItemRef: () => HTMLDivElement | null;
     triggerPropsField?: string;
+    disabled?: boolean;
+    initialValue?: FieldValue;
 }

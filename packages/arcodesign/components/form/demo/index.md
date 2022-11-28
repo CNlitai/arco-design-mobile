@@ -14,183 +14,41 @@ import {
     Button,
     Checkbox,
     Toast,
+    ImagePicker
 } from '@arco-design/mobile-react';
-const rules = {
-    name: [
-        { required: true },
-        { type: "string", max: 10, min: 2,  uppercase: true },
-        {
-            validator: (val, callback) => {
-                return new Promise((_,reject)=>{
-                    setTimeout(() => {
-                        reject('asyncValidator error')
-                    }, 1000);
-                }).catch(err=>{
-                    callback(err);
-                })
-            },
 
-        },
-    ],
-    address: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入家庭地址');
-                } else if (val.length > 100) {
-                    callback('最多输入100个字');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    email: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入邮箱');
-                } else if (!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(val)) {
-                    callback('邮箱格式不正确');
-                } else if (val.length > 40) {
-                    callback('最多输入40个字');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    mobile: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入手机号');
-                } else if (!/^\d{11}$/.test(val)) {
-                    callback('手机号式不正确');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    verify_code: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入验证码');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    identity_no: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请上传身份证');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    douyin_main_account: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入抖音发文账号');
-                } else if (val.length > 40) {
-                    callback('最多输入40个字');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    douyin_nick_name: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入账号昵称');
-                } else if (val.length > 40) {
-                    callback('最多输入40个字');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-    douyin_collect_account: [
-        {
-            validator: (val, callback) => {
-                if (!val) {
-                    callback('请输入收款抖音号');
-                } else if (val.length > 40) {
-                    callback('最多输入40个字');
-                } else {
-                    callback();
-                }
-            },
-        },
-    ],
-};
+const options = [
+    { label: 'horizontal', value: 'horizontal' },
+    { label: 'vertical', value: 'vertical' },
+];
+
+const genderOptions = [
+    { label: 'male', value: '1' },
+    { label: 'female', value: '2' },
+    { label: 'others', value: '3' },
+
+]
+
 export default function FormDemo() {
-    const inputRef = React.useRef();
-    const toastRef = React.useRef();
     const [form] = Form.useForm();
+    const [layout, setLayout] = React.useState('horizontal');
     const toSubmit = val => {
         form.submit();
     };
-    const onSubmit = values => {
-        console.log(values, 'onSubmit');
-        if (!checked) {
-            return Toast.toast('请勾选同意后再进行签约');
-        }
-
-        toastRef.current = Toast.toast({
-            duration: 0,
-            icon: 'loading',
-            loading: true,
-            disableBodyTouch: true,
-            content: '合同生成中，请稍后',
-        });
-        setTimeout(() => {
-            toastRef.current.close();
-        }, 1000);
+    const onSubmit = (values, result) => {
+        console.log('----submit Successfully', values, result);
     };
 
-    const onSubmitFailed = (fields = []) => {
-        const errorMessage = fields.find(i => i.errors && i.errors.length).errors[0];
-        const firstField = (fields || [])?.[0];
-        if(firstField) {
-            firstField?.dom?.scrollIntoView();
-        }
-        Toast.toast(errorMessage);
+    const onSubmitFailed = (values, errors = [], definedError = {}) => {
+        const errorMessage = errors.find(i => i.errors && i.errors.length).errors[0];
+        // const firstField = (errors || [])?.[0];
+        // if(firstField) {
+        //     firstField?.dom?.scrollIntoView();
+        // }
+        console.log('----submit failed value:', values);
+        console.log('----submit error', errors);
     };
 
-    const [checked, setChecked] = React.useState(false);
-    const agreementChange = () => {
-        setChecked(!checked);
-    };
-    const [submit, setSubmit] = React.useState(false);
-
-    const canSubmit = () => {
-        const res =
-            !Object.keys(form.getFieldsValue()).some(key => {
-                return !form.isFieldTouched(key) || form.getFieldError(key).length;
-            }) && checked;
-        console.log(res);
-        return res;
-    };
-    const onValuesChange = (changedValues, allValues) => {
-        if (changedValues.mobile) {
-            /^\d{11}$/.test(changedValues.mobile) ? setDisable(false) : setDisable(true);
-        }
-        // setTimeout(() => {
-        //     setSubmit(canSubmit());
-        // });
-    };
 
     const [send, setSend] = React.useState('发送验证码');
     const [disable, setDisable] = React.useState(true);
@@ -206,68 +64,44 @@ export default function FormDemo() {
             {send}
         </button>
     );
-    React.useEffect(() => {
-        // setSubmit(canSubmit());
-    });
     return (
         <div>
+            <Radio.Group options={options} value={layout} onChange={setLayout} />
             <Form
                 form={form}
                 onSubmit={onSubmit}
                 onSubmitFailed={onSubmitFailed}
-                onValuesChange={onValuesChange}
-                layout="vertical"
+                layout={layout}
             >
-                <Form.FormItem field="name" label="姓名" rules={rules.name} trigger="onBlur" required>
-                    <Input placeholder="请输入姓名" clearable border="none" />
+                <Form.FormItem field="name" label="UserName" trigger="onBlur" required>
+                    <Input placeholder="Please input username" clearable border="none" />
                 </Form.FormItem>
-                <Form.FormItem field="address" label="家庭地址" rules={rules.address} trigger="onInput">
-                    <Input placeholder="请输入家庭住址，详细到门牌号" clearable border="none" />
+                <Form.FormItem field="age" label="Age" trigger="onInput" rules={[{type: 'number', min: 12, validateLevel: 'warning'}]}>
+                    <Input type="number" placeholder="Please input age"  clearable border="none" />
                 </Form.FormItem>
-                <Form.FormItem field="email" label="邮箱" rules={rules.email}>
-                    <Input placeholder="请输入邮箱" clearable border="none" />
-                </Form.FormItem>
-                <Form.FormItem
-                    field="mobile"
-                    label="手机号"
-                    rules={rules.mobile}
-                    extra={<SendCode />}
-                >
-                    <Input placeholder="请输入手机号" clearable border="none" />
-                </Form.FormItem>
-                <Form.FormItem field="verify_code" label="验证码" rules={rules.verify_code}>
-                    <Input placeholder="请输入验证码" clearable border="none" />
-                </Form.FormItem>
-                <Form.FormItem field="identity_no" label="身份证号" rules={rules.identity_no}>
-                    <Input placeholder="上传身份证后自动识别" clearable border="none" />
+                <Form.FormItem field="gender" label="Gender">
+                    <Radio.Group options={genderOptions} />
                 </Form.FormItem>
                 <Form.FormItem
-                    style={{ width: 'auto' }}
-                    field="douyin_main_account[1]"
-                    label="抖音发文账号"
-                    rules={rules.douyin_main_account}
+                    field="checkbox"
+                    label="Checkbox"
+                    required
                 >
-                    <Input placeholder="请输入抖音发文账号" clearable border="none" />
+                    <Checkbox.Group
+                        layout='block'
+                    >
+                        <Checkbox value={1} style={{height: 42}}>Option content 1</Checkbox>
+                        <Checkbox value={2} style={{height: 42}}>Option content 2</Checkbox>
+                        <Checkbox value={3} style={{height: 42}}>Option content 3</Checkbox>
+                    </Checkbox.Group>
                 </Form.FormItem>
-                <Form.FormItem
-                    field="douyin_nick_name"
-                    label="账号昵称"
-                    rules={rules.douyin_nick_name}
-                >
-                    <Input placeholder="请输入账号昵称" clearable border="none" />
+                <Form.FormItem field="pictures" label="Pictures" initialValue={[
+                    { url: 'http://sf1-cdn-tos.toutiaostatic.com/obj/arco-mobile/_static_/large_image_1.jpg' }
+                ]}>
+                    <ImagePicker />
                 </Form.FormItem>
-                <Form.FormItem
-                    field="douyin_collect_account"
-                    label="收款抖音号"
-                    rules={rules.douyin_collect_account}
-                >
-                    <Input placeholder="请输入收款抖音号" clearable border="none" />
-                </Form.FormItem>
-                <Checkbox checked={checked} onChange={agreementChange}>
-                    同意且知晓<a>《个人信息保护说明》</a>
-                </Checkbox>
-                <Button needActive onClick={toSubmit} className={`${submit ? 'able' : 'disable'}`}>
-                    Primary
+                <Button needActive onClick={toSubmit}>
+                    Submit
                 </Button>
             </Form>
         </div>

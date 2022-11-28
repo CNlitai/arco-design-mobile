@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { ReactNode, useRef } from 'react';
-import { Callbacks, FieldError, FieldItem, FieldValue, IFormInstance } from './type';
+import { Callbacks, IFieldError, FieldItem, IFormInstance } from './type';
 
 const defaultFunc: any = () => {
     console.log('arco');
@@ -136,8 +136,7 @@ class FormData {
         };
     };
 
-    setInitialValues = (initVal: Record<string, unknown>, firstSet: boolean) => {
-        if (firstSet) return;
+    setInitialValues = (initVal: Record<string, unknown>) => {
         this._initialValues = { ...(initVal || {}) };
         this.setFieldsValue(initVal);
     };
@@ -147,24 +146,19 @@ class FormData {
     };
 
     validateFields = () => {
-        const promiseList: Promise<{
-            field: string;
-            value: FieldValue;
-            errors: ReactNode[];
-        }>[] = [];
+        const promiseList: Promise<IFieldError>[] = [];
         Object.values(this._fieldsList).forEach((entity: any) => {
             const promise = entity.validateField();
             promiseList.push(promise.then(errors => errors));
         });
-        let results: FieldError[] = [];
-        const summaryPromise: Promise<FieldItem> = new Promise((resolve, reject) => {
+        const summaryPromise: Promise<IFieldError[]> = new Promise((resolve, reject) => {
             Promise.all(promiseList).then(res => {
-                results = res.filter(item => item?.errors?.length);
+                const errorResults = res.filter(item => item?.errors?.length);
 
-                if (results.length) {
-                    reject(results);
+                if (errorResults.length) {
+                    reject(errorResults);
                 } else {
-                    resolve(results);
+                    resolve(res);
                 }
             });
         });
@@ -173,18 +167,16 @@ class FormData {
 
     submit = async () => {
         this.validateFields()
-            .then(values => {
-                console.log(values);
+            .then(result => {
                 const { onSubmit } = this._callbacks;
-                // TODO: 试试 throw error 能否被catch捕捉到
-                onSubmit?.(values);
+                onSubmit?.(this._formData, result);
             })
             .catch(e => {
-                console.log(e);
                 const { onSubmitFailed } = this._callbacks;
-                if (onSubmitFailed) {
-                    onSubmitFailed(e);
+                if (!onSubmitFailed) {
+                    return;
                 }
+                onSubmitFailed(this._formData, e);
             });
     };
 

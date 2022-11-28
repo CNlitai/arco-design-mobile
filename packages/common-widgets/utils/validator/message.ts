@@ -47,15 +47,15 @@ export const messageTemplate: IValidateMsgTemplate = {
     },
 };
 
-export const getMsgTemplate = (temName, values: string[]) => {
+export const getMsgTemplate = (templates: IValidateMsgTemplate, temName, values: string[]) => {
     const temNameArr = temName.split('.');
     let theTemplate: string = defaultMessageTemplate;
-    if (temNameArr[0] in messageTemplate) {
-        const firstTemplate = messageTemplate[temNameArr[0]];
+    if (temNameArr[0] in templates) {
+        const firstTemplate = templates[temNameArr[0]];
         if (
             Object.prototype.toString.call(firstTemplate).toLowerCase() === '[object object]' &&
             temNameArr.length > 1 &&
-            temNameArr[1] in messageTemplate[temNameArr[0]]
+            temNameArr[1] in templates[temNameArr[0]]
         ) {
             theTemplate = firstTemplate[temNameArr[1]];
         } else {

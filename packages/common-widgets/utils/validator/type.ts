@@ -1,5 +1,8 @@
-export type FieldValue = any;
+import { ILocale } from '../locale';
 
+export type IFieldValue = any;
+
+export type IValidateLevel = 'error' | 'warning';
 export enum ValidatorType {
     Number = 'number',
     String = 'string',
@@ -13,7 +16,7 @@ export interface IBaseRules {
     // 触发校验的时机
     validateTrigger?: string | string[];
     // 校验失败时候以 `error` 或 `warning` 形式展示错误信息。当设置为 `warning` 时不会阻塞表单提交
-    validateLevel?: 'error' | 'warning';
+    validateLevel?: IValidateLevel;
     required?: boolean;
     length?: number;
     message?: string;
@@ -49,7 +52,7 @@ export interface IStringValidator extends IBaseRules {
 }
 
 export type ICustomValidatorFunc = (
-    value: FieldValue,
+    value: IFieldValue,
     callback: (message?: string) => void,
 ) => Promise<void> | void;
 export interface ICustomValidator extends IBaseRules {
@@ -72,12 +75,14 @@ export type IRules = {
 export type InnerRules = IRules & { field: string };
 
 export interface ValidatorError {
-    value: FieldValue;
+    value: IFieldValue;
     message?: string[];
     errorTypes: string[];
+    validateLevel?: IValidateLevel;
 }
 
-export type IValidateMsgTemplate = any;
+export type IValidateMsgTemplate = Omit<ILocale['Form'], ''>;
 export interface IValidateOption {
     validateMessage?: IValidateMsgTemplate;
+    field: string;
 }

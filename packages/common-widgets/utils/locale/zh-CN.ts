@@ -51,7 +51,7 @@ const localeConfig: ILocale = {
         cancelBtn: '取消',
     },
     Form: {
-        required: '%s is required',
+        required: '%s 为必填项',
         type: {
             email: defaultMessageTemplate,
             url: defaultMessageTemplate,

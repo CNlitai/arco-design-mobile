@@ -2,18 +2,20 @@
 import React, { PureComponent, ReactNode, useContext, useRef, useState } from 'react';
 import { cls } from '@arco-design/mobile-utils';
 import { Validator } from '@arco-design/mobile-utils/utils/validator/validator';
-import { ValidatorError } from '@arco-design/mobile-utils/utils/validator/type';
+import { ValidatorError, ValidatorType } from '@arco-design/mobile-utils/utils/validator/type';
 import { FormItemContext } from './form-item-context';
 import { GlobalContext } from '../context-provider';
 import {
-    FieldError,
+    IFieldError,
     FieldItem,
     FieldValue,
     IFormDataMethods,
+    IFormItemContext,
     IFormItemInnerProps,
     IFormItemProps,
     ValidateStatus,
 } from './type';
+import { getErrorAndWarnings, isFieldRequired } from './utils';
 
 enum InternalComponentType {
     Input = 'ADMInput',
@@ -26,11 +28,12 @@ enum InternalComponentType {
     RadioGroup = 'ADMRadioGroup',
     Slider = 'ADMSlider',
     Switch = 'ADMSwitch',
+    ImagePicker = 'ADMImagePicker',
 }
 
 interface IFromItemInnerState {
     validateStatus: ValidateStatus;
-    errors?: FieldError[];
+    errors?: ReactNode[];
     _touched: boolean;
 }
 
@@ -41,9 +44,13 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
 
     private _touched = false;
 
-    constructor(props) {
+    constructor(props: IFormItemInnerProps, context: IFormItemContext) {
         super(props);
         this.destroyField = () => {};
+        if (props?.initialValue && props.field) {
+            const { setInitialValues } = context.form.getInternalHooks();
+            setInitialValues({ [props.field]: props.initialValue });
+        }
     }
 
     componentDidMount() {
@@ -73,30 +80,36 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         return this._touched;
     }
 
-    validateField(): Promise<{
-        errors: ReactNode[];
-        value: FieldValue;
-        field: string;
-        dom: HTMLDivElement | null;
-    }> {
+    validateField(): Promise<IFieldError> {
+        const { validateMessages } = this.context;
         const { getFieldValue } = this.context.form;
         const { field, rules, onValidateStatusChange } = this.props;
         const value = getFieldValue(field);
         if (rules?.length && field) {
             const fieldDom = this.props.getFormItemRef();
-            const fieldValidator = new Validator({ [field]: rules });
+            const fieldValidator = new Validator({ [field]: rules }, { validateMessages });
             return new Promise(resolve => {
-                fieldValidator.validate({ [field]: value }, (errors: ValidatorError) => {
-                    this._errors = errors.message || [];
-                    onValidateStatusChange({
-                        errors,
-                        warnings: [],
-                    });
-                    return resolve({ errors: errors.message || [], value, field, dom: fieldDom });
-                });
+                fieldValidator.validate(
+                    { [field]: value },
+                    (errorsMap: Record<string, ValidatorError[]>) => {
+                        const { errors, warnings } = getErrorAndWarnings(errorsMap?.[field] || []);
+                        this._errors = errors;
+                        onValidateStatusChange({
+                            errors: this._errors,
+                            warnings,
+                        });
+                        return resolve({
+                            errors: this._errors,
+                            warnings,
+                            value,
+                            field,
+                            dom: fieldDom,
+                        });
+                    },
+                );
             });
         }
-        return Promise.resolve({ errors: [], value, field, dom: null });
+        return Promise.resolve({ errors: [], warnings: [], value, field, dom: null });
     }
 
     setFieldData(value: FieldValue) {
@@ -111,6 +124,7 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
         const { getFieldValue } = this.context.form as IFormDataMethods;
         let props = {
             [triggerPropsField]: getFieldValue(field),
+            disabled: this.props.disabled,
         };
         switch (children.type.displayName) {
             case InternalComponentType.Input:
@@ -119,27 +133,32 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
                     value: getFieldValue(field) || '',
                     onInput: (_, newValue) => this.setFieldData(newValue),
                     onClear: () => this.setFieldData(''),
+                    disabled: this.props.disabled,
                 };
                 break;
             case InternalComponentType.Checkbox:
             case InternalComponentType.Radio:
             case InternalComponentType.Slider:
             case InternalComponentType.RadioGroup:
+            case InternalComponentType.CheckboxGroup:
                 props = {
                     value: getFieldValue(field),
                     onChange: newValue => this.setFieldData(newValue),
+                    disabled: this.props.disabled,
                 };
                 break;
             case InternalComponentType.DatePicker:
                 props = {
                     currentTs: getFieldValue(field),
                     onChange: (_, newValue) => this.setFieldData(newValue),
+                    disabled: this.props.disabled,
                 };
                 break;
             case InternalComponentType.Picker:
                 props = {
                     data: getFieldValue(field),
                     onPickerChange: (_, newValue) => this.setFieldData(newValue),
+                    disabled: this.props.disabled,
                 };
                 break;
 
@@ -147,13 +166,20 @@ class FormItemInner extends PureComponent<IFormItemInnerProps, IFromItemInnerSta
                 props = {
                     checked: Boolean(getFieldValue(field)),
                     onChange: checked => this.setFieldData(checked),
+                    disabled: this.props.disabled,
+                };
+                break;
+            case InternalComponentType.ImagePicker:
+                props = {
+                    images: getFieldValue(field),
+                    onChange: images => this.setFieldData(images),
+                    disabled: this.props.disabled,
                 };
                 break;
             default:
                 const originTrigger = props[trigger];
-                props[trigger] = (_, newValue, ...args: any) => {
+                props[trigger] = (newValue, ...args: any) => {
                     this.setFieldData(newValue);
-
                     originTrigger && originTrigger(newValue, ...args);
                 };
         }
@@ -176,10 +202,11 @@ export default function FormItem(props: IFormItemProps) {
         style,
         extra,
         requiredIcon,
+        rules,
         ...rest
     } = props;
     const { prefixCls } = useContext(GlobalContext);
-    const { layout } = useContext(FormItemContext);
+    const { layout, disabled: propsDisabled } = useContext(FormItemContext);
     const [errors, setErrors] = useState<ReactNode | null>(null);
     const [warnings, setWarnings] = useState<ReactNode[]>([]);
     const formItemRef = useRef<HTMLDivElement | null>(null);
@@ -195,23 +222,28 @@ export default function FormItem(props: IFormItemProps) {
     const getFormItemRef = () => {
         return formItemRef.current;
     };
+    const fieldDisabled = disabled || propsDisabled;
 
+    const fieldRules = rest?.required
+        ? [{ type: ValidatorType.String, required: true }, ...(rules || [])]
+        : rules;
+    const isRequired = isFieldRequired(rules) || rest?.required;
     return (
         <div
             className={cls(
                 `${prefixCls}-form-item`,
                 `${prefixCls}-form-item-${itemLayout || layout}`,
                 {
-                    disabled,
+                    disabled: fieldDisabled,
                 },
             )}
             style={style}
             ref={formItemRef}
         >
             <div className={cls(`${prefixCls}-form-label-item`)}>
-                {rest.required
+                {isRequired
                     ? requiredIcon || (
-                          <span className={cls(`${prefixCls}-form-label-item-required-tip`)}>
+                          <span className={cls(`${prefixCls}-form-label-item-required-asterisk`)}>
                               *
                           </span>
                       )
@@ -222,18 +254,35 @@ export default function FormItem(props: IFormItemProps) {
                 <div className={cls(`${prefixCls}-form-item-control`)}>
                     <FormItemInner
                         {...rest}
+                        rules={fieldRules}
+                        disabled={fieldDisabled}
                         field={field}
                         onValidateStatusChange={onValidateStatusChange}
                         getFormItemRef={getFormItemRef}
                     />
                 </div>
                 {errors && (
-                    <div className={cls(`${prefixCls}-form-message`)}>
+                    <div
+                        className={cls(
+                            `${prefixCls}-form-item-message ${prefixCls}-form-item-error-message`,
+                        )}
+                    >
                         {errors}
-                        {warnings.map((warning, index) => (
-                            <p key={index}>{warning}</p>
-                        ))}
                     </div>
+                )}
+                {(warnings || []).map((node, key) =>
+                    typeof node === 'string' ? (
+                        <div
+                            className={cls(
+                                `${prefixCls}-form-item-message ${prefixCls}-form-item-warning-message`,
+                            )}
+                            key={key}
+                        >
+                            {node}
+                        </div>
+                    ) : (
+                        node
+                    ),
                 )}
             </div>
             {extra}

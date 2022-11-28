@@ -17,31 +17,42 @@
         position: relative;
         align-items: center;
         justify-content: flex-start;
-        font-size: var(--form-item-label-item-font-size);
-        line-height: var(--input-height);
-        color: var(--form-item-label-item-color);
-        padding-right: var(--form-item-label-item-gutter);
-        width: var(--form-item-label-item-width);
+        .use-var(font-size, form-item-label-item-font-size);
+        .use-var(line-height, form-item-label-item-line-height);
+        .use-var(color, form-item-label-item-color);
+        .use-var(padding-right, form-item-label-item-gutter);
+        .use-var(width, form-item-label-item-width);
 
-        &-required-tip {
+        &-required-asterisk {
             position: absolute;
             left: -0.6em;
             top: 0;
-            font-size: var(--form-item-label-item-font-size);
-            line-height: var(--input-height);
-            color: var(--form-item-label-item-required-tip-color);
+
+            .use-var(font-size, form-item-label-item-font-size);
+            .use-var(line-height, form-item-label-item-line-height);
+            .use-var(color, form-item-label-item-required-asterisk-color);
+        }
+        .disabled & {
+            .use-var(color, input-disabled-color);
         }
     }
-    &-item-control-wrapper {
-        width: 100%;
-        flex: 1;
-        position: relative;
-        &-item-control {
+    &-item-control {
+        padding: 16px 0;
+        .arco-input-wrap, .arco-input {
+            padding: 0;
+        }
+        &-wrapper {
+            width: 100%;
+            flex: 1;
+            position: relative;
+            .arco-input-wrap {
+                .use-var(height, input-text-line-height);
+            }
         }
     }
-    &-message {
+    &-item-message {
         .rem(font-size, 12);
-        color: #f53f3f;
+        .use-var(color, form-item-label-item-required-asterisk-color);
         .rem(margin-top, -5);
         svg,
         span {
@@ -51,9 +62,15 @@
         svg {
             .rem(margin-right, 4);
         }
-        margin: var(--form-item-message-margin-top) 0 var(--form-item-message-margin-bottom);
+        margin-bottom: 16px;
+    }
+    &-item-error-message {
+        .use-var(color, form-item-error-message-color);
     }
 
+    &-item-warning-message {
+        .use-var(color, form-item-warning-message-color);
+    }
 
     &-item.@{prefix}-form-item-vertical {
         display: block;
@@ -62,6 +79,13 @@
         }
         .@{prefix}-form-label-item {
             width: auto;
+            margin-top: 16px;
+            .use-var(height, form-item-label-item-font-size);
+            .use-var( line-height, form-item-label-item-font-size);
+            &-required-asterisk {
+                .use-var(height, form-item-label-item-font-size);
+                .use-var( line-height, form-item-label-item-font-size);
+            }
         }
     }
 }
