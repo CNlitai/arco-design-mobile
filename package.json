@@ -117,7 +117,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "@arco-design/mobile-utils": "^2.10.2-alpha.3",
+    "@arco-design/mobile-utils": "^2.12.7",
     "@arco-design/transformable": "^1.0.2",
     "axios": "^0.27.2",
     "es6-promise": "^4.2.8",
