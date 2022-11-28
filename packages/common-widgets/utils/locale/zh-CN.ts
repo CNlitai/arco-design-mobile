@@ -70,9 +70,9 @@ const localeConfig: ILocale = {
             negative: '`%s`不是负数',
         },
         string: {
-            max: '%s 不能多于 %s 个字符',
-            min: '%s 至少有 %s 个字符',
-            len: '%s 一定为 %s 个字符',
+            max: '%s 超过 %s 个字符',
+            min: '%s 少于 %s 个字符',
+            len: '%s 字符个数应为 %s',
             match: '`%s` 不匹配 %s 模式',
             uppercase: '%s 需全为大写字符',
             lowercase: '%s 需全为小写字符',
