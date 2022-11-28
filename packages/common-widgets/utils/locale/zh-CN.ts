@@ -62,8 +62,8 @@ const localeConfig: ILocale = {
             boolean: defaultMessageTemplate,
         },
         number: {
-            min: '`%s` 不大于 `%s`',
-            max: '`%s` 不小于 `%s`',
+            min: '`%s` 小于 `%s`',
+            max: '`%s` 大于 `%s`',
             equal: '`%s` 不等于 `%s`',
             range: '`%s` 不在 `%s ~ %s` 范围中',
             positive: '`%s` 不是正数',
@@ -79,8 +79,8 @@ const localeConfig: ILocale = {
             whitespace: '%s 不能为连续空格',
         },
         array: {
-            max: '%s 数组长度不大于 %s',
-            min: '%s 数组长度不少于 %s',
+            max: '%s 数组长度大于 %s',
+            min: '%s 数组长度小于 %s',
             len: '%s 数组长度需为 %s',
             includes: '%s 不包含 %s',
             deepEqual: '%s 不完全等于 %s',
