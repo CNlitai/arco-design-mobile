@@ -3,7 +3,7 @@ import { ReactNode, useRef } from 'react';
 import { Callbacks, IFieldError, FieldItem, IFormInstance } from './type';
 
 const defaultFunc: any = () => {
-    console.log('arco');
+    console.log('arco ');
 };
 
 export const defaultFormDataMethods = {

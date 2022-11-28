@@ -66,7 +66,7 @@ const localeConfig: ILocale = {
             min: '`%s` is not greater than `%s`',
             max: '`%s` is not less than `%s`',
             equal: '`%s` is not equal to `%s`',
-            range: '`%s` is not in range `%s ~ %s`',
+            range: '`%s` is not in range `%s ~ %s` ',
             positive: '`%s` is not a positive number',
             negative: '`%s` is not a negative number',
         },
